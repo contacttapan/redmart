@@ -27,7 +27,7 @@ public class App {
 	public static void main(String[] args) {
 		try {
 			ClassLoader classLoader = App.class.getClassLoader();
-			scan = new Scanner(new File(classLoader.getResource("test.txt").getFile()));
+			scan = new Scanner(new File(classLoader.getResource("map.txt").getFile()));
 		
 			
 				String line = scan.nextLine();
@@ -92,17 +92,33 @@ public class App {
 				
 			}
 			 System.out.print("RESULT--->>>>>>>>>>>>>>>>>>>>>>>>");
+			 LinkedList<Node> bestPath=finalpathArray.get(0);
+			 int length =bestPath.size();
+		     int difference=bestPath.getFirst().value-bestPath.getLast().value;
 			for (Iterator<LinkedList<Node>> iterator = finalpathArray.iterator(); iterator.hasNext();) {
 				logger.info(" PATH---> ");
 				LinkedList<Node> path = (LinkedList<Node>) iterator.next();
-				for (Iterator iterator2 = path.iterator(); iterator2.hasNext();) {
+				
+				/*for (Iterator iterator2 = path.iterator(); iterator2.hasNext();) {
 					Node node = (Node) iterator2.next();
 					 System.out.print("-->"+node.value);
+				}*/
+				if(path.size()>=length && (path.getFirst().value-path.getLast().value) > difference)
+				{
+					bestPath=path;
+				    length=bestPath.size();
+				    difference=bestPath.getFirst().value-bestPath.getLast().value;
 				}
+				
 				
 			}
 			//find the lengthy and highest value
-			
+			logger.info("Final Path with Difference {} and size {}",difference,length);
+			System.out.println("PATH--->");
+ 			for (Iterator iterator2 = bestPath.iterator(); iterator2.hasNext();) {
+				Node node = (Node) iterator2.next();
+				 System.out.print("-->"+node.value);
+			}
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -125,20 +141,22 @@ public class App {
 	}
 	
 	public static LinkedList<Node> combine(LinkedList<Node> nodeList){
-		System.out.println("PATH-->");
-		for (Iterator iterator2 = nodeList.iterator(); iterator2.hasNext();) {
+		//System.out.println("PATH-->");
+		/*for (Iterator iterator2 = nodeList.iterator(); iterator2.hasNext();) {
 			Node node = (Node) iterator2.next();
 			 System.out.print("-->"+node.value);
 		}
-		System.out.println("FOR EACH BELOW PATH");
+		*/
+		//System.out.println("FOR EACH BELOW PATH");
 			for (Iterator iterator = pathArray.iterator(); iterator.hasNext();) {
-				System.out.println("PATH-->");
+			//	System.out.println("PATH-->");
 			LinkedList<Node> linkedList = (LinkedList<Node>) iterator.next();
-			for (Iterator iterator2 = linkedList.iterator(); iterator2.hasNext();) {
+			/*for (Iterator iterator2 = linkedList.iterator(); iterator2.hasNext();) {
 				Node node = (Node) iterator2.next();
 				 System.out.print("-->"+node.value);
-			}
+			}*/
 			if(nodeList.getLast().equals(linkedList.getFirst())){
+				nodeList.removeLast();
 				nodeList.addAll(linkedList);
 				
 			}
