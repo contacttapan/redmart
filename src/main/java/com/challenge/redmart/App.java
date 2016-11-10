@@ -193,7 +193,7 @@ public class App {
 		public void run() {
 			LinkedList<Node> result = this.combine();
 			synchronized (finalpathArray) {
-				logger.info("Complted for Node length {} size of FinalArray{}", result.size(), finalpathArray.size());
+				logger.info("Completed for Node length {} size of FinalArray{}", result.size(), finalpathArray.size());
 				finalpathArray.add(result);
 			}
 		}
