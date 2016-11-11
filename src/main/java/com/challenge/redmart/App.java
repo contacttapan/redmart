@@ -34,7 +34,7 @@ public class App {
 	public static void main(String[] args) {
 		try {
 			ClassLoader classLoader = App.class.getClassLoader();
-			scan = new Scanner(new File(classLoader.getResource("map.txt").getFile()));
+			scan = new Scanner(new File(classLoader.getResource("test1.txt").getFile()));
 
 			String line = scan.nextLine();
 			StringTokenizer st = new StringTokenizer(line);
@@ -62,26 +62,25 @@ public class App {
 			logger.info("The input sorted matrix is : ");
 			// for each number in the array find the following
 			// - find North , south , east , west distance
-			ArrayList<ArrayList<Node>> rows = new ArrayList<ArrayList<Node>>();
+			ArrayList<Node> nodes =new  ArrayList<Node>();
 			for (int i = 0; i < rowSize; i++) {
-				ArrayList<Node> columns = new ArrayList<Node>();
 				for (int j = 0; j < colSize; j++) {
 					Node point = new Node(i, j, input[i][j]);
 					point.initNodes(input, rowSize, colSize);
-					columns.add(point);
+					nodes.add(point);
 					if (j % 100 == 0)
 						logger.info("Completed 100th set of J {}", j);
 				}
-				rows.add(columns);
+				
 			}
 			scan.close();
 			logger.info("End Node initialization");
+			logger.info("Total Nodes {}",+nodes.size());
 			logger.info("Strating Node node Visits");
 			// create tuple of link list with all possible path to and from it
 			int counter = 0;
-			for (Iterator<ArrayList<Node>> iterator = rows.iterator(); iterator.hasNext();) {
-				ArrayList<Node> arrayList = (ArrayList<Node>) iterator.next();
-				for (Iterator<Node> iterator2 = arrayList.iterator(); iterator2.hasNext();) {
+		
+				for (Iterator<Node> iterator2 = nodes.iterator(); iterator2.hasNext();) {
 					Node node = (Node) iterator2.next();
 					ArrayList<LinkedList<Node>> result = findMoveMents(node);
 					counter++;
@@ -89,24 +88,34 @@ public class App {
 					if (counter % 100 == 0)
 						logger.info("Completed 100th set {}", counter);
 				}
-			}
+			
 			logger.info("Ending Node node Visits");
 			// combine the adjacent list
 			// System.out.print(" ");
-			ThreadPoolExecutor combinerpoolExecutor = new ThreadPoolExecutor(20, 20, 0L, TimeUnit.MILLISECONDS,
+			ThreadPoolExecutor combinerpoolExecutor = new ThreadPoolExecutor(10, 10, 0L, TimeUnit.MILLISECONDS,
 					new LinkedBlockingQueue<Runnable>());
 			Iterator<LinkedList<Node>> piterator = pathArray.iterator();
+			int worksize=pathArray.size();
+			int submitedjob=0;
 			while (piterator.hasNext()) {
-				LinkedList<Node> path = (LinkedList<Node>) piterator.next();
+				
 				if (combinerpoolExecutor.getActiveCount() < combinerpoolExecutor.getMaximumPoolSize())
+					{
+					LinkedList<Node> path = (LinkedList<Node>) piterator.next();
 					combinerpoolExecutor.submit(new App().new Combiner(path));
+					submitedjob++;
+					}
 				else
 					logger.info("combinerpoolExecutor.getActiveCount() ={}", combinerpoolExecutor.getActiveCount());
 
 			}
-			while (combinerpoolExecutor.getActiveCount() != 0) {
+			while (submitedjob!=worksize) {
 				Thread.sleep(3000);
-				logger.info("combinerpoolExecutor.getActiveCount() ={}", combinerpoolExecutor.getActiveCount());
+				logger.info("combinerpoolExecutor total task completed  {}",combinerpoolExecutor.getCompletedTaskCount());
+			}
+			while(combinerpoolExecutor.getActiveCount()!=0){
+				Thread.sleep(3000);
+				logger.info("waiting for job to finish",combinerpoolExecutor.getActiveCount());
 			}
 			combinerpoolExecutor.shutdown();
 			logger.info("RESULT--->>>>>>>>>>>>>>>>>>>>>>>>");
@@ -114,9 +123,21 @@ public class App {
 			int length = bestPath.size();
 			int difference = bestPath.getFirst().value - bestPath.getLast().value;
 			for (Iterator<LinkedList<Node>> iterator = finalpathArray.iterator(); iterator.hasNext();) {
-
+				logger.info("PATH--->");
+				String temp="";
+				for (Iterator<Node> iterator2 = bestPath.iterator(); iterator2.hasNext();) {
+					Node node = (Node) iterator2.next();
+					temp=temp+("-->" + node.value);
+				}
+				logger.info("{}",temp);
 				LinkedList<Node> path = (LinkedList<Node>) iterator.next();
-				if (path.size() >= length && (path.getFirst().value - path.getLast().value) > difference) {
+				if (path.size() >= length)
+					 {
+					bestPath = path;
+					length = bestPath.size();
+					difference = bestPath.getFirst().value - bestPath.getLast().value;
+					logger.info("BEST PATH length {} & diff{}",length,difference);
+				}else if(path.size() == length && (path.getFirst().value - path.getLast().value) > difference) {
 					bestPath = path;
 					length = bestPath.size();
 					difference = bestPath.getFirst().value - bestPath.getLast().value;
@@ -126,10 +147,13 @@ public class App {
 			// find the lengthy and highest value
 			logger.info("Final Path with Difference {} and size {} and Node List {}", difference, length,bestPath);
 			logger.info("PATH--->");
+			String temp="";
 			for (Iterator<Node> iterator2 = bestPath.iterator(); iterator2.hasNext();) {
 				Node node = (Node) iterator2.next();
-				System.out.print("-->" + node.value);
+				temp=temp+("-->" + node.value);
+				
 			}
+			logger.info("{}" ,temp);
 
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -154,26 +178,52 @@ public class App {
 		if (node.east != null) {
 			listeast.add(node);
 			listeast.add(node.east);
+			logger.info("PATH--->");
+			String temp="";
+			for (Iterator<Node> iterator2 = listeast.iterator(); iterator2.hasNext();) {
+				Node n1 = (Node) iterator2.next();
+				temp=temp+("-->" + n1.value);
+			}
+			logger.info("{}",temp);
 			pathArray.add(listeast);
-			findMoveMents(node.east);
+			
 		}
 		if (node.west != null) {
 			listwest.add(node);
 			listwest.add(node.west);
+			logger.info("PATH--->");
+			String temp="";
+			for (Iterator<Node> iterator2 = listwest.iterator(); iterator2.hasNext();) {
+				Node n1 = (Node) iterator2.next();
+				temp=temp+("-->" + n1.value);
+			}
+			logger.info("{}",temp);
 			pathArray.add(listwest);
-			findMoveMents(node.west);
+			
 		}
 		if (node.north != null) {
 			listnorth.add(node);
 			listnorth.add(node.north);
+			String temp="";
+			for (Iterator<Node> iterator2 = listnorth.iterator(); iterator2.hasNext();) {
+				Node n1 = (Node) iterator2.next();
+				temp=temp+("-->" + n1.value);
+			}
+			logger.info("{}",temp);
 			pathArray.add(listnorth);
-			findMoveMents(node.north);
+			
 		}
 		if (node.south != null) {
 			listsouth.add(node);
 			listsouth.add(node.south);
+			String temp="";
+			for (Iterator<Node> iterator2 = listsouth.iterator(); iterator2.hasNext();) {
+				Node n1 = (Node) iterator2.next();
+				temp=temp+("-->" + n1.value);
+			}
+			logger.info("{}",temp);
 			pathArray.add(listsouth);
-			findMoveMents(node.south);
+			
 		}
 		return pathArray;
 	}
@@ -192,6 +242,13 @@ public class App {
 		@Override
 		public void run() {
 			LinkedList<Node> result = this.combine();
+			logger.info("PATH--->");
+			String temp="";
+			for (Iterator<Node> iterator2 = result.iterator(); iterator2.hasNext();) {
+				Node node = (Node) iterator2.next();
+				temp=temp+("-->" + node.value);
+			}
+			logger.info("{}" ,temp);
 			synchronized (finalpathArray) {
 				logger.info("Completed for Node length {} size of FinalArray{}", result.size(), finalpathArray.size());
 				finalpathArray.add(result);
